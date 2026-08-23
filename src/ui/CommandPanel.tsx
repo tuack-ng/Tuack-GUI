@@ -11,7 +11,7 @@ import Select from "./Select";
 import { getRenDefaults, setRenProject } from "../ipc";
 import { TEMPLATES } from "../templates";
 import { reportError } from "../errors";
-import type { Command, DataTarget, DmkAction, DumpTarget, RenDefaults } from "../ipc/types";
+import type { Command, DumpTarget, RenDefaults } from "../ipc/types";
 
 type FieldKind = "text" | "select" | "object" | "templates";
 
@@ -38,7 +38,6 @@ interface CommandSpec {
 const CATEGORIES = [
   { id: "gen", label: "生成" },
   { id: "test", label: "测试" },
-  { id: "data", label: "数据" },
   { id: "ren", label: "渲染" },
   { id: "dump", label: "导出" },
   { id: "doc", label: "文档" },
@@ -63,30 +62,6 @@ const COMMANDS: CommandSpec[] = [
       { key: "no_auto_open", label: "不自动打开", kind: "select", options: ["否", "是"], defaultValue: "是" },
     ],
     build: (v) => ({ command: "ren", template: v.template, keep_tmp: v.keep_tmp === "是", no_auto_open: v.no_auto_open === "是" }),
-  },
-  {
-    id: "dmk", label: "生成数据（dmk）", cat: "data",
-    fields: [
-      { key: "target", label: "目标", kind: "select", options: ["data", "sample"], labels: ["正式数据", "样例"] },
-      { key: "action", label: "操作", kind: "select", options: ["gen", "regen", "reset"], labels: ["生成", "重新生成", "重置"] },
-      { key: "object", label: "对象", kind: "object", placeholder: "如 1,2-3,4-10（留空 = 全部）", defaultValue: "all" },
-      { key: "validate", label: "生成后校验", kind: "select", options: ["默认", "是", "否"], defaultValue: "默认" },
-    ],
-    build: (v) => ({
-      command: "dmk",
-      target: v.target as DataTarget,
-      action: v.action as DmkAction,
-      object: v.object || "all",
-      validate: v.validate === "默认" ? null : v.validate === "是",
-    }),
-  },
-  {
-    id: "validate", label: "校验输入（validate）", cat: "data",
-    fields: [
-      { key: "target", label: "目标", kind: "select", options: ["data", "sample"], labels: ["正式数据", "样例"] },
-      { key: "object", label: "对象", kind: "object", placeholder: "如 1,2-3,4-10（留空 = 全部）", defaultValue: "all" },
-    ],
-    build: (v) => ({ command: "validate", target: v.target as DataTarget, object: v.object || "all" }),
   },
   {
     id: "dump", label: "导出（dump）", cat: "dump",

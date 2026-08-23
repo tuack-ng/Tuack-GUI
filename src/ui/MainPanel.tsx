@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import { useEffect, useRef, useState } from "react";
-import { Eye, EyeOff, FileText, Gauge, Settings, type LucideIcon } from "lucide-react";
+import { Database, Eye, EyeOff, FileText, Gauge, Settings, type LucideIcon } from "lucide-react";
 import ConfigEditor from "./ConfigEditor";
 import PreviewPane, { type PreviewPaneHandle } from "./PreviewPane";
 import StatementEditor, { type StatementEditorHandle } from "./StatementEditor";
 import JudgeView, { type JudgeTrigger } from "./JudgeView";
+import DataPanel from "./DataPanel";
 import type { NodeKind, Project } from "../ipc/types";
 import type { AppTheme } from "../theme";
 import { session } from "../rpc/session";
@@ -23,12 +24,14 @@ interface Props {
   onRender: () => void;
   /** 评测触发（命令面板 test 命令）：dir 匹配时切换到评测视图 */
   judgeTrigger: JudgeTrigger | null;
+  /** 数据生成完成后刷新工程树 */
+  onProjectRefresh?: () => void;
 }
 
 /** 低于该宽度时配置 / 编辑 / 预览退化为切换 tab（类比 Qt resizeEvent 动态换布局） */
 const SPLIT_WIDTH = 880;
 
-type MainView = "config" | "edit" | "preview" | "judge";
+type MainView = "config" | "edit" | "preview" | "judge" | "data";
 
 export default function MainPanel({
   project,
@@ -39,6 +42,7 @@ export default function MainPanel({
   refreshKey,
   onRender,
   judgeTrigger,
+  onProjectRefresh,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [narrow, setNarrow] = useState(false);
@@ -173,11 +177,22 @@ export default function MainPanel({
     { id: "config", label: "配置", icon: Settings },
     ...(isProblem ? ([{ id: "edit", label: "编辑", icon: FileText }] as const) : []),
     ...(isProblem ? ([{ id: "judge", label: "评测", icon: Gauge }] as const) : []),
+    ...(isProblem ? ([{ id: "data", label: "数据", icon: Database }] as const) : []),
     ...(narrow ? ([{ id: "preview", label: "预览", icon: Eye }] as const) : []),
   ];
 
+  const dataView = isProblem ? (
+    <DataPanel dir={selected.dir} theme={theme} onProjectRefresh={onProjectRefresh} />
+  ) : null;
+
   const leftContent =
-    view === "edit" ? editor : view === "judge" ? judgeView : config;
+    view === "edit"
+      ? editor
+      : view === "judge"
+        ? judgeView
+        : view === "data"
+          ? dataView
+          : config;
 
   return (
     <main ref={containerRef} className="flex min-h-0 flex-1 flex-col">
@@ -223,7 +238,15 @@ export default function MainPanel({
       )}
       {narrow ? (
         <div className="min-h-0 flex-1">
-          {view === "config" ? config : view === "edit" ? editor : view === "judge" ? judgeView : preview}
+          {view === "config"
+            ? config
+            : view === "edit"
+              ? editor
+              : view === "judge"
+                ? judgeView
+                : view === "data"
+                  ? dataView
+                  : preview}
         </div>
       ) : (
         <div className="flex min-h-0 flex-1">

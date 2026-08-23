@@ -8,7 +8,7 @@
 import { loadJudgeResults, loadRenderResults, saveJudgeResult, saveRenderResult } from "../ipc";
 import { rpc } from "./client";
 import { session, waitUntil } from "./session";
-import type { JudgeResult, RenFinishedEvent, RunFinishedEvent, ScoreResult } from "./types";
+import type { DmkGenResult, JudgeResult, RenFinishedEvent, RunFinishedEvent, ScoreResult, ValidateCheckResult } from "./types";
 
 export type RunTarget = "data" | "sample";
 
@@ -272,6 +272,142 @@ export async function runJudge(
     latest.set(key, result);
     persistJudgeResult(key, result);
     return result;
+  } finally {
+    off();
+  }
+}
+
+// ---- dmk（数据生成）/ validate（输入校验）----
+
+export interface DmkReport {
+  problem: string;
+  target: "data" | "sample";
+  action: "gen" | "regen" | "reset";
+  /** testId -> 该点生成结果 */
+  results: Record<string, DmkGenResult>;
+}
+
+/**
+ * 逐点驱动数据生成：dmk/create（异步编译准备）-> 等 dmk/ready -> dmk/get 取 items
+ * -> 逐个 dmk/gen（生成输入/输出，写 data/ 或 sample/）。object 为服务端解析的
+ * 测试点表达式（"all" 或 "1,2-3"）。
+ */
+export async function runDmk(
+  problem: string,
+  target: "data" | "sample",
+  action: "gen" | "regen" | "reset",
+  validate: boolean | null,
+  object: string,
+  onLog: JudgeLog,
+  onResult?: (r: DmkGenResult) => void,
+): Promise<DmkReport> {
+  let taskId: string | null = null;
+  const state: {
+    ready: boolean;
+    failed: { state: string; error: string | null } | null;
+  } = { ready: false, failed: null };
+
+  const off = session.onEvent((method, params) => {
+    if (!taskId || params["taskId"] !== taskId) return;
+    if (method === "dmk/ready") {
+      state.ready = true;
+    } else if (method === "dmk/finished") {
+      state.failed = {
+        state: params["state"] as string,
+        error: (params["error"] as string | null) ?? null,
+      };
+    }
+  });
+
+  try {
+    const created = await rpc.dmkCreate(session.sid, problem, target, action, validate, object);
+    taskId = created.taskId;
+    onLog(`生成 ${problem}（${target}/${action}）…`);
+    await waitUntil(() => state.ready || state.failed !== null, 180_000, "等待生成准备超时");
+    if (state.failed) {
+      throw new Error(state.failed.error ?? `生成失败：${state.failed.state}`);
+    }
+    const info = await rpc.dmkGet(session.sid, taskId);
+    const report: DmkReport = { problem, target, action, results: {} };
+    for (const id of info.items) {
+      const r = await rpc.dmkGen(session.sid, taskId, String(id));
+      report.results[String(id)] = r;
+      onResult?.(r);
+      const parts = [`[${r.testId}]`];
+      parts.push(`输入:${r.input.status}`);
+      if (r.input.error) parts.push(r.input.error);
+      if (r.output.status === "skip") {
+        parts.push(`输出:skip`);
+      } else {
+        parts.push(`输出:${r.output.status}`);
+        if (r.output.error) parts.push(r.output.error);
+      }
+      onLog(parts.join("  "));
+    }
+    const ok = Object.values(report.results).filter(
+      (r) => r.input.status !== "fail" && r.output.status !== "fail",
+    ).length;
+    onLog(`生成完成：${ok}/${info.items.length} 个测试点成功`);
+    return report;
+  } finally {
+    off();
+  }
+}
+
+export interface ValidateReport {
+  problem: string;
+  target: "data" | "sample";
+  /** testId -> 校验结果 */
+  results: Record<string, ValidateCheckResult>;
+}
+
+/**
+ * 只读输入校验：validate/create（编译 Validator）-> 等 validate/ready
+ * -> 逐个 validate/check 校验数据点输入文件。
+ */
+export async function runValidate(
+  problem: string,
+  target: "data" | "sample",
+  onLog: JudgeLog,
+): Promise<ValidateReport> {
+  let taskId: string | null = null;
+  const state: {
+    ready: boolean;
+    failed: { state: string; error: string | null } | null;
+  } = { ready: false, failed: null };
+
+  const off = session.onEvent((method, params) => {
+    if (!taskId || params["taskId"] !== taskId) return;
+    if (method === "validate/ready") {
+      state.ready = true;
+    } else if (method === "validate/finished") {
+      state.failed = {
+        state: params["state"] as string,
+        error: (params["error"] as string | null) ?? null,
+      };
+    }
+  });
+
+  try {
+    const created = await rpc.validateCreate(session.sid, problem, target);
+    taskId = created.taskId;
+    onLog(`校验 ${problem}（${target}）…`);
+    await waitUntil(() => state.ready || state.failed !== null, 180_000, "等待校验准备超时");
+    if (state.failed) {
+      throw new Error(state.failed.error ?? `校验失败：${state.failed.state}`);
+    }
+    // 取数据点列表（dmk 的 items 语义；validate 用 object 过滤已由 create 处理，这里校验全部已存在点）
+    const { problem: pd } = await rpc.problemGet(session.sid, problem);
+    const points = target === "data" ? pd.data : pd.samples;
+    const report: ValidateReport = { problem, target, results: {} };
+    for (const pt of points) {
+      const r = await rpc.validateCheck(session.sid, taskId, String(pt.id));
+      report.results[String(pt.id)] = r;
+      onLog(`[${r.testId}] ${r.status}${r.message ? `  ${r.message}` : ""}`);
+    }
+    const ok = Object.values(report.results).filter((r) => r.status === "ok").length;
+    onLog(`校验完成：${ok}/${points.length} 个测试点通过`);
+    return report;
   } finally {
     off();
   }

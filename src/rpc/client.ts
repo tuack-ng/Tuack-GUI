@@ -11,6 +11,8 @@ import type {
   ConfigResult,
   ConfigSchema,
   ConfigSetResult,
+  DmkGenResult,
+  DmkGetResult,
   InitializeResult,
   JudgeResult,
   ProblemGetResult,
@@ -21,6 +23,8 @@ import type {
   RunCreateResult,
   RunGetResult,
   ScoreResult,
+  ValidateCheckResult,
+  ValidateGetResult,
   WorkspaceListResult,
   WorkspaceOpenResult,
 } from "./types";
@@ -227,6 +231,52 @@ export class RpcClient {
 
   renGet(sessionId: string, taskId: string): Promise<RenGetResult> {
     return this.call<RenGetResult>("ren/get", { sessionId, taskId });
+  }
+
+  // ---- dmk ----
+
+  dmkCreate(
+    sessionId: string,
+    problem: string,
+    target: "data" | "sample",
+    action: "gen" | "regen" | "reset",
+    validate?: boolean | null,
+    object?: string,
+  ): Promise<{ taskId: string }> {
+    const params: Record<string, unknown> = { sessionId, problem, target, action };
+    if (validate !== undefined && validate !== null) params.validate = validate;
+    if (object && object !== "all") params.object = object;
+    return this.call<{ taskId: string }>("dmk/create", params);
+  }
+
+  dmkGen(sessionId: string, taskId: string, testId: string): Promise<DmkGenResult> {
+    return this.call<DmkGenResult>("dmk/gen", { sessionId, taskId, testId });
+  }
+
+  dmkGet(sessionId: string, taskId: string): Promise<DmkGetResult> {
+    return this.call<DmkGetResult>("dmk/get", { sessionId, taskId });
+  }
+
+  dmkCancel(sessionId: string, taskId: string): Promise<null> {
+    return this.call<null>("dmk/cancel", { sessionId, taskId });
+  }
+
+  // ---- validate ----
+
+  validateCreate(sessionId: string, problem: string, target: "data" | "sample"): Promise<{ taskId: string }> {
+    return this.call<{ taskId: string }>("validate/create", { sessionId, problem, target });
+  }
+
+  validateCheck(sessionId: string, taskId: string, testId: string): Promise<ValidateCheckResult> {
+    return this.call<ValidateCheckResult>("validate/check", { sessionId, taskId, testId });
+  }
+
+  validateGet(sessionId: string, taskId: string): Promise<ValidateGetResult> {
+    return this.call<ValidateGetResult>("validate/get", { sessionId, taskId });
+  }
+
+  validateCancel(sessionId: string, taskId: string): Promise<null> {
+    return this.call<null>("validate/cancel", { sessionId, taskId });
   }
 }
 

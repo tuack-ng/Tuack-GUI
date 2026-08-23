@@ -198,6 +198,15 @@ export default function App() {
     setPreviewRefresh((r) => r + 1);
   }
 
+  /** 数据生成等写入工程目录后刷新工程树 */
+  function handleProjectRefresh() {
+    if (!project) return;
+    session
+      .refreshProject()
+      .then(setProject)
+      .catch((e) => reportError(`刷新工程失败：${e}`));
+  }
+
   function handleToggleTheme() {
     const next: AppTheme = theme === "dark" ? "light" : "dark";
     applyTheme(next);
@@ -248,6 +257,7 @@ export default function App() {
           refreshKey={previewRefresh}
           onRender={handleRenderSelected}
           judgeTrigger={judgeTrigger}
+          onProjectRefresh={handleProjectRefresh}
         />
       </div>
       <OutputDrawer logs={logs} running={running} runId={runId} onCancel={handleCancel} />

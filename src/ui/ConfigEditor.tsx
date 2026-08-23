@@ -301,14 +301,20 @@ export default function ConfigEditor({ dir, kind, theme, narrow = false }: Props
         <TabsContent value="json" className="h-full min-h-0">
           <div className="flex h-full min-h-0 flex-col gap-2">
             <div className="min-h-0 flex-1 overflow-hidden rounded" style={{ border: "1px solid var(--border)" }}>
-              <CodeMirror
-                value={jsonText}
-                onChange={setJsonText}
-                extensions={[json(), EditorView.lineWrapping]}
-                theme={theme}
-                height="100%"
-                style={{ fontSize: 12, height: "100%", width: "100%" }}
-              />
+              {jsonText.length > 50 * 1024 ? (
+                <div className="flex h-full items-center justify-center p-4 text-xs" style={{ color: "var(--muted-foreground)" }}>
+                  配置过大（&gt;50KB），已拒绝加载编辑器。请拆分或缩小配置后编辑。
+                </div>
+              ) : (
+                <CodeMirror
+                  value={jsonText}
+                  onChange={setJsonText}
+                  extensions={[json(), EditorView.lineWrapping]}
+                  theme={theme}
+                  height="100%"
+                  style={{ fontSize: 12, height: "100%", width: "100%" }}
+                />
+              )}
             </div>
             <Button variant="default" className="self-start" onClick={saveJson}>
               保存

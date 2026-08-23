@@ -248,29 +248,38 @@ export default function StatementEditor({ dir, theme, onRender, onCursorLine, re
         </div>
       )}
       <div className="relative min-h-0 flex-1 overflow-hidden">
-        <CodeMirror
-          key={dir}
-          value={content}
-          onCreateEditor={(view) => {
-            viewRef.current = view;
-            // 编辑器滚动（滚动条/滚轮）→ 顶部可见行 → 预览跟随
-            view.scrollDOM.addEventListener("scroll", handleEditorScroll);
-            // 用户滚动来源：加锁；滚动真正停止（scrollend）释放
-            view.scrollDOM.addEventListener("wheel", handleUserWheel);
-            view.scrollDOM.addEventListener("pointerdown", handleUserPointerDown);
-            view.scrollDOM.addEventListener("scrollend", handleScrollEnd);
-          }}
-          onChange={(v) => {
-            handleChange(v);
-          }}
-          // 文件读完前禁编辑，避免加载回写覆盖刚输入的内容
-          editable={loaded}
-          // 题面是长段落文本：软折行，编辑器宽度锁死，不随行宽横向增长
-          extensions={[markdown(), EditorView.lineWrapping, cursorListener]}
-          theme={theme}
-          height="100%"
-          style={{ fontSize: 13, position: "absolute", inset: 0 }}
-        />
+        {content.length > 50 * 1024 ? (
+          <div
+            className="flex h-full items-center justify-center p-4 text-xs"
+            style={{ color: "var(--muted-foreground)" }}
+          >
+            题面过大（&gt;50KB），已拒绝加载编辑器。
+          </div>
+        ) : (
+          <CodeMirror
+            key={dir}
+            value={content}
+            onCreateEditor={(view) => {
+              viewRef.current = view;
+              // 编辑器滚动（滚动条/滚轮）→ 顶部可见行 → 预览跟随
+              view.scrollDOM.addEventListener("scroll", handleEditorScroll);
+              // 用户滚动来源：加锁；滚动真正停止（scrollend）释放
+              view.scrollDOM.addEventListener("wheel", handleUserWheel);
+              view.scrollDOM.addEventListener("pointerdown", handleUserPointerDown);
+              view.scrollDOM.addEventListener("scrollend", handleScrollEnd);
+            }}
+            onChange={(v) => {
+              handleChange(v);
+            }}
+            // 文件读完前禁编辑，避免加载回写覆盖刚输入的内容
+            editable={loaded}
+            // 题面是长段落文本：软折行，编辑器宽度锁死，不随行宽横向增长
+            extensions={[markdown(), EditorView.lineWrapping, cursorListener]}
+            theme={theme}
+            height="100%"
+            style={{ fontSize: 13, position: "absolute", inset: 0 }}
+          />
+        )}
       </div>
     </div>
   );

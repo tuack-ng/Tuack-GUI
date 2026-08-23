@@ -253,3 +253,105 @@ export interface RenFinishedEvent {
   warnings: string[];
   error: string | null;
 }
+
+// ---- dmk（数据生成）----
+
+export type DmkAction = "gen" | "regen" | "reset";
+export type DmkState = "preparing" | "ready" | "cancelled" | "error";
+export type DmkStatus = "gen" | "regen" | "reset" | "skip" | "empty" | "fail";
+
+export interface DmkPointResult {
+  status: DmkStatus;
+  error: string | null;
+}
+
+export interface DmkCreateResult {
+  taskId: string;
+}
+
+export interface DmkGenResult {
+  testId: string;
+  input: DmkPointResult;
+  output: DmkPointResult;
+}
+
+export interface DmkGetResult {
+  state: DmkState;
+  problem: string;
+  target: string;
+  action: DmkAction;
+  items: number[];
+  targetDir: string;
+  seeds: Record<string, number>;
+  /** testId -> { testId, input, output } */
+  results: Record<string, DmkGenResult>;
+  error: string | null;
+}
+
+export interface DmkStartedEvent {
+  seq: number;
+  sessionId: string;
+  taskId: string;
+  problem: string;
+  target: string;
+  action: string;
+}
+
+export interface DmkReadyEvent {
+  seq: number;
+  sessionId: string;
+  taskId: string;
+}
+
+export interface DmkFinishedEvent {
+  seq: number;
+  sessionId: string;
+  taskId: string;
+  state: DmkState;
+  error: string | null;
+}
+
+// ---- validate（输入校验）----
+
+export type ValidateStatus = "ok" | "fail";
+
+export interface ValidateCreateResult {
+  taskId: string;
+}
+
+export interface ValidateCheckResult {
+  testId: string;
+  status: ValidateStatus;
+  message: string | null;
+}
+
+export interface ValidateGetResult {
+  state: DmkState;
+  problem: string;
+  target: string;
+  /** testId -> { testId, status, message } */
+  results: Record<string, ValidateCheckResult>;
+  error: string | null;
+}
+
+export interface ValidateStartedEvent {
+  seq: number;
+  sessionId: string;
+  taskId: string;
+  problem: string;
+  target: string;
+}
+
+export interface ValidateReadyEvent {
+  seq: number;
+  sessionId: string;
+  taskId: string;
+}
+
+export interface ValidateFinishedEvent {
+  seq: number;
+  sessionId: string;
+  taskId: string;
+  state: DmkState;
+  error: string | null;
+}
