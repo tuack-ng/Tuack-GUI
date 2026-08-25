@@ -6,6 +6,8 @@
 
 一款美观、跨平台的 [Tuack-NG](https://github.com/tuack-ng/tuack-ng) 图形化前端
 
+![Tuack-GUI](https://github.com/tuack-ng/Tuack-GUI/blob/main/doc/assets/Tuack-GUI%20Banner.svg)
+
 [![Stars](https://img.shields.io/github/stars/Qaaxaap/tuack-gui?label=Stars)](https://github.com/Qaaxaap/tuack-gui)
 [![正式版 Release](https://img.shields.io/github/v/release/Qaaxaap/tuack-gui?style=flat-square&color=%233fb950&label=正式版)](https://github.com/Qaaxaap/tuack-gui/releases/latest)
 [![测试版 Release](https://img.shields.io/github/v/release/Qaaxaap/tuack-gui?include_prereleases&style=flat-square&label=测试版)](https://github.com/Qaaxaap/tuack-gui/releases/)
