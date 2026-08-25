@@ -160,6 +160,7 @@ pnpm tauri dev
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/deliya2011"><img src="https://avatars.githubusercontent.com/u/167776235?v=4?s=100" width="100px;" alt="Vesperon"/><br /><sub><b>Vesperon</b></sub></a><br /><a href="#design-deliya2011" title="Design">🎨</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Qaaxaap"><img src="https://avatars.githubusercontent.com/u/175310223?v=4?s=100" width="100px;" alt="Qaaxaap"/><br /><sub><b>Qaaxaap</b></sub></a><br /><a href="#code-Qaaxaap" title="Code">💻</a> <a href="#ideas-Qaaxaap" title="Ideas, Planning, & Feedback">🤔</a> <a href="#doc-Qaaxaap" title="Documentation">📖</a> <a href="#design-Qaaxaap" title="Design">🎨</a> <a href="#maintenance-Qaaxaap" title="Maintenance">🚧</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://revitalize.top"><img src="https://avatars.githubusercontent.com/u/247487531?v=4?s=100" width="100px;" alt="Weihao Cheng"/><br /><sub><b>Weihao Cheng</b></sub></a><br /><a href="#design-Cwhirly" title="Design">🎨</a></td>
     </tr>
   </tbody>
 </table>
