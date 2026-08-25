@@ -1,4 +1,21 @@
 {
   "projectName": "Tuack-GUI",
-  "projectOwner": "tuack-ng"
+  "projectOwner": "tuack-ng",
+  "files": [
+    "README.md"
+  ],
+  "commitType": "docs",
+  "commitConvention": "angular",
+  "contributorsPerLine": 7,
+  "contributors": [
+    {
+      "login": "deliya2011",
+      "name": "Vesperon",
+      "avatar_url": "https://avatars.githubusercontent.com/u/167776235?v=4",
+      "profile": "https://github.com/deliya2011",
+      "contributions": [
+        "design"
+      ]
+    }
+  ]
 }
