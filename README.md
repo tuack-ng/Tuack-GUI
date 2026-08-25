@@ -150,6 +150,19 @@ pnpm tauri dev
 
 ## 致谢
 
+感谢以下同学为本项目的开发提供支持（[✨](https://allcontributors.org/docs/zh-cn/emoji-key)）：
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+
+
 - [Tuack-NG](https://github.com/tuack-ng/tuack-ng) —— 本项目的后端核心，感谢 [Pulsar](https://github.com/Pulsar33550336) 的辛勤维护。
 - [Tuack](https://github.com/mulab11/tuack) —— Tuack-NG 的设计思想来源。
 
